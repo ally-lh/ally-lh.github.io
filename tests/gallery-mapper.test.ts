@@ -14,8 +14,6 @@ function makeResponse(
         fields: {
           title: "Static Bloom",
           category: "Print",
-          colSpan: 2,
-          rowSpan: 2,
           image: { sys: { type: "Link", linkType: "Asset", id: "asset-1" } },
         },
       },
@@ -25,7 +23,10 @@ function makeResponse(
         {
           sys: { id: "asset-1" },
           fields: {
-            file: { url: "//images.ctfassets.net/space/poster.png" },
+            file: {
+              url: "//images.ctfassets.net/space/poster.png",
+              details: { image: { width: 1200, height: 1600 } },
+            },
           },
         },
       ],
@@ -39,50 +40,55 @@ describe("mapContentfulGallery", () => {
     const [item] = mapContentfulGallery(makeResponse());
     expect(item).toEqual({
       id: "entry-1",
-      num: "E-01",
       label: "STATIC BLOOM",
       category: "PRINT",
-      colSpan: 2,
-      rowSpan: 2,
+      aspect: 0.75,
       image: "https://images.ctfassets.net/space/poster.png",
       imagePlaceholder: "Awaiting evidence upload",
     });
   });
 
-  it("numbers exhibits sequentially with zero padding", () => {
+  it("defaults to a square tile when the asset has no usable dimensions", () => {
     const response = makeResponse({
-      items: Array.from({ length: 3 }, (_, i) => ({
-        sys: { id: `entry-${i}` },
-        fields: { title: `Piece ${i}` },
-      })),
-    });
-    const nums = mapContentfulGallery(response).map((g) => g.num);
-    expect(nums).toEqual(["E-01", "E-02", "E-03"]);
-  });
-
-  it("clamps out-of-range spans to the 1-2 grid range", () => {
-    const response = makeResponse({
-      items: [
-        {
-          sys: { id: "entry-1" },
-          fields: { title: "Huge", colSpan: 7, rowSpan: 0 },
-        },
-      ],
+      includes: {
+        Asset: [
+          {
+            sys: { id: "asset-1" },
+            fields: {
+              file: {
+                url: "//images.ctfassets.net/space/poster.png",
+                details: { image: { width: 1200, height: 0 } },
+              },
+            },
+          },
+        ],
+      },
     });
     const [item] = mapContentfulGallery(response);
-    expect(item.colSpan).toBe(2);
-    expect(item.rowSpan).toBe(1);
+    expect(item.aspect).toBe(1);
   });
 
-  it("defaults spans and category when fields are missing", () => {
+  it("defaults aspect and category when fields are missing", () => {
     const response = makeResponse({
       items: [{ sys: { id: "entry-1" }, fields: { title: "Bare" } }],
     });
     const [item] = mapContentfulGallery(response);
-    expect(item.colSpan).toBe(1);
-    expect(item.rowSpan).toBe(1);
+    expect(item.aspect).toBe(1);
     expect(item.category).toBe("MISC");
     expect(item.image).toBeUndefined();
+    expect(item.priority).toBeUndefined();
+  });
+
+  it("passes through a numeric priority and ignores anything else", () => {
+    const response = makeResponse({
+      items: [
+        { sys: { id: "a" }, fields: { title: "Pinned", priority: 3 } },
+        { sys: { id: "b" }, fields: { title: "Junk", priority: "high" } },
+      ],
+    });
+    const [pinned, junk] = mapContentfulGallery(response);
+    expect(pinned.priority).toBe(3);
+    expect(junk.priority).toBeUndefined();
   });
 
   it("skips entries without a title", () => {

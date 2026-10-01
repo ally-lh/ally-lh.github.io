@@ -120,8 +120,10 @@ export function Laptop({ open, grown, wiping, onShoot, children }: LaptopProps) 
                 : "calc(440px * var(--ui-scale, 1))",
               // Phones get a taller screen (fills the height above the
               // pinned bottom) via the max() term; 0 on tablet/desktop.
+              // Off-phone the screen takes most of the viewport height but
+              // never grows past 760px on tall monitors.
               height: grown
-                ? "max(min(680px, calc(77vh - 60px)), calc(var(--phone-lift, 0) * (100vh - 130px)))"
+                ? "max(min(760px, calc(82vh - 60px)), calc(var(--phone-lift, 0) * (100vh - 130px)))"
                 : "calc(230px * var(--ui-scale, 1))",
               transform: `rotateX(${open ? 0 : -104}deg)`,
               transformOrigin: "50% 100%",

@@ -15,6 +15,8 @@ export function CaseScreen({ game }: { game: GameApi }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const c = CASES[game.state.caseIdx];
   if (!c) return null;
+  // Single-media cases: the video (if any) is what's on show, else the image.
+  const media = c.video ?? c.image;
 
   return (
     <div className="absolute inset-0 flex flex-col px-8 pb-6 pt-[22px]">
@@ -61,13 +63,19 @@ export function CaseScreen({ game }: { game: GameApi }) {
                       style={{ breakInside: "avoid" }}
                     >
                       {tile.video ? (
-                        <div className="relative aspect-video">
+                        <button
+                          type="button"
+                          onClick={() => setLightbox(tile.video ?? null)}
+                          className="relative block w-full transition-opacity hover:opacity-80"
+                          style={{ aspectRatio: tile.aspect ?? "16 / 9" }}
+                          title="View full size"
+                        >
                           <ImageSlot
                             video={tile.video}
                             alt={c.title}
                             placeholder={tile.placeholder ?? c.imagePlaceholder}
                           />
-                        </div>
+                        </button>
                       ) : tile.src ? (
                         <button
                           type="button"
@@ -96,13 +104,9 @@ export function CaseScreen({ game }: { game: GameApi }) {
               </div>
             ) : (
               <div
-                className={`absolute inset-0 ${c.image && !c.video ? "transition-opacity hover:opacity-80" : ""}`}
-                onClick={
-                  c.image && !c.video
-                    ? () => setLightbox(c.image ?? null)
-                    : undefined
-                }
-                title={c.image && !c.video ? "View full resolution" : undefined}
+                className={`absolute inset-0 ${media ? "transition-opacity hover:opacity-80" : ""}`}
+                onClick={media ? () => setLightbox(media) : undefined}
+                title={media ? "View full resolution" : undefined}
               >
                 <ImageSlot
                   src={c.image}

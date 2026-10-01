@@ -7,27 +7,33 @@ export const CASES: readonly CaseFile[] = [
     title: "CORDY",
     category: "START UP / FULL STACK",
     year: "ONGOING",
-    date: "SINCE 2023.04.01",
+    date: "SINCE 2025.03.01",
     time: "11:11",
     demoUrl: "https://cordy.sg",
+    // Video-only case, so the menu card needs its own still.
+    thumbnail: "/thumbs/cordy.webp",
     video:
       "https://videos.ctfassets.net/ayry21z1dzn2/2Tmf5ypC8IJoEW4jGoa56p/a1e1558811e50ea4972154adef8c839e/Screen_Now_Recording_Aug_8_2026.mp4",
     description:
-      "Full identity for a late-night ramen pop-up: a logo suite that glows like signage, a menu system built on bold slabs, and packaging loud enough to survive a food-market crowd.",
+      "CORDY helps youths in Singapore work out what to do next. It knows 600+ competitions, hackathons, workshops, grants and volunteering openings, and recommends the ones that match each person's interests and goals. As co-technical lead I design and build the full-stack web app, from the Hot-or-Not shortlist feed and portfolio tracker to the APIs and database behind them, now serving 20k+ active users.",
     evidence: [
       "Recommendation System UI",
       "Portfolio Tracking System",
       "Opportunity Management System",
-      "Full-stack web app",
-      "User authentication & authorization",
-      "Database design & management",
+      "Role-based auth (NextAuth, Supabase Auth)",
+      "PostgreSQL schema design with Prisma",
+      "Live with 20k+ active users",
+      "3rd place, SMU Hult Prize Qualifiers 2026",
     ],
     tags: [
       "FULL-STACK DEVELOPMENT",
       "UIUX",
       "NEXTJS",
+      "TYPESCRIPT",
+      "TRPC",
+      "PRISMA",
+      "POSTGRESQL",
       "TAILWINDCSS",
-      "MYSQL",
       "FIGMA",
     ],
     line: "Case 01. CORDY seems like a promising start-up. Examine the evidence.",
@@ -86,6 +92,12 @@ export const CASES: readonly CaseFile[] = [
       {
         src: "https://images.ctfassets.net/ayry21z1dzn2/5EKxjMWUSmFZy0pcopgeYw/0de7b03f7bfdddba71f8caba717819d4/Image_from_Allison_Wix_Editor__1_.jpeg",
       },
+      { src: "/work/my-protection-explorer/expenses.webp" },
+      // iPad screen recording — portrait, so the tile keeps its own ratio.
+      {
+        video: "/work/my-protection-explorer/walkthrough.mp4",
+        aspect: "720 / 1044",
+      },
     ],
     tags: ["VUE 3", "TYPESCRIPT", "Contentful CMS", "RIVE", "PWA"],
     line: "Case 03. A KPI Project for Great Eastern that was showcased at the Singapore Fintech Festival 2024.",
@@ -99,8 +111,6 @@ export const CASES: readonly CaseFile[] = [
     year: "2023",
     date: "2023.08.09",
     time: "01:12",
-    image:
-      "https://images.ctfassets.net/ayry21z1dzn2/39wlxxwyYzwNdeJ1NOXXKO/06245cadc37cfff5af4541207b819672/Smart_Mockup_Templates_Kit_Cover.png?h=250",
     repoUrl: "https://github.com/Project-INC-2023/inc-design-system",
     description:
       "Workplace Project for IMCS, a design system that provides a consistent and cohesive user experience across all digital touchpoints. It includes a set of reusable components, guidelines, and best practices for designing and developing digital products.",
@@ -112,8 +122,19 @@ export const CASES: readonly CaseFile[] = [
     tags: ["NPM", "FIGMA", "DESIGN SYSTEM", "REACT", "TAILWINDCSS"],
     line: "Case 04. an FYP Project for IMCS to create a comprehensive design system that can be used across all digital touchpoints.",
     imagePlaceholder: "Drop pixel art here",
-    // Bento demo — set `src` (or `video`) on each tile; delete to use a
-    // single image/video instead.
+    bento: [
+      {
+        src: "https://images.ctfassets.net/ayry21z1dzn2/39wlxxwyYzwNdeJ1NOXXKO/06245cadc37cfff5af4541207b819672/Smart_Mockup_Templates_Kit_Cover.png?h=250",
+      },
+      { src: "/work/inc-design-system/data-entry.webp" },
+      { src: "/work/inc-design-system/input.webp" },
+      { src: "/work/inc-design-system/radio.webp" },
+      { src: "/work/inc-design-system/switch.webp" },
+      { src: "/work/inc-design-system/progress.webp" },
+      { src: "/work/inc-design-system/spinner.webp" },
+      { src: "/work/inc-design-system/tag.webp" },
+      { src: "/work/inc-design-system/timepicker.webp" },
+    ],
   },
   {
     id: "IMCS Toolkit",
@@ -128,11 +149,14 @@ export const CASES: readonly CaseFile[] = [
     evidence: ["Form builder", "Data visualiser", "Live-collaboration docs"],
     tags: ["NEXTJS", "TAILWINDCSS", "TRPC", "PRISMA", "MYSQL", "FIGMA"],
     line: "Case 05. A full-stack project for IMCS to create a consultant's toolkit as a FYP project in Y3.",
+    thumbnail:
+      "https://images.ctfassets.net/ayry21z1dzn2/29zpcRepRdDk1pdgd3zEEM/75dbf24b67f71ee4e8167d088bfbbc15/Score_Evaluation_Summary.png",
     imagePlaceholder: "Drop type specimens here",
     bento: [
       {
         src: "https://images.ctfassets.net/ayry21z1dzn2/9j2jSqvnWRJmFi8uvaEUD/982caeb76dc1c068a51908cc3e3d0de6/Add_Resource_EP_Consultant.png?h=250",
       },
+      { src: "/work/imcs-toolkit/add-resource-template.webp" },
       {
         src: "https://images.ctfassets.net/ayry21z1dzn2/6EzBf0Wtrzj3POscn7Htf0/c9c944ba79f3e64708ee7dd7e8ef776a/Personal_Note.png?h=250",
       },

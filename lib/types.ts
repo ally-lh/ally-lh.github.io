@@ -37,6 +37,9 @@ export interface CaseFile {
   line: string;
   /** Sealed slot: shown dimmed as "coming soon", not openable. */
   comingSoon?: boolean;
+  /** Small image for the menu card (path under /public or full URL).
+   *  Defaults to the first bento image, then `image`. */
+  thumbnail?: string;
   /** Optional path under /public (e.g. "/work/foo.png") or a full URL. */
   image?: string;
   /** Optional video (path under /public or full URL, e.g. an .mp4 on a
@@ -57,6 +60,9 @@ export interface CaseMediaTile {
   src?: string;
   /** Video path/URL — wins over `src`; autoplays muted on a loop. */
   video?: string;
+  /** CSS aspect-ratio of the video frame (default "16 / 9"); set it for
+   *  portrait recordings so they aren't cropped. */
+  aspect?: string;
   placeholder?: string;
 }
 
@@ -83,15 +89,17 @@ export interface Education {
 /** Exhibit in the graphic-design evidence locker (gallery screen). */
 export interface GalleryItem {
   id: string;
-  /** Exhibit tag, e.g. "E-01". */
-  num: string;
   label: string;
   category: string;
-  /** Masonry spans on the 4-column / 150px-row grid (1–2 each). */
-  colSpan: 1 | 2;
-  rowSpan: 1 | 2;
+  /** Width / height of the artwork — the tile keeps this ratio. */
+  aspect: number;
+  /** Higher values are listed first (default 0); ties keep file order. */
+  priority?: number;
   /** Optional path under /public. */
   image?: string;
+  /** Optional video (path under /public or full URL). Wins over `image`;
+   *  autoplays muted on a loop. */
+  video?: string;
   imagePlaceholder: string;
 }
 
@@ -99,8 +107,14 @@ export interface GalleryItem {
 export interface SmallProject {
   title: string;
   blurb: string;
-  year: string;
+  /** Omit when unknown — the row simply shows no year. */
+  year?: string;
   tags: readonly string[];
   /** Optional external link. */
   href?: string;
+  /** Full-size image (path under /public; animated WebP works) opened in
+   *  the lightbox when the row has no `href`. */
+  image?: string;
+  /** Optional small image shown beside the blurb (path under /public). */
+  thumbnail?: string;
 }

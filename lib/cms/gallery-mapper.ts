@@ -6,7 +6,8 @@ import type { GalleryItem } from "@/lib/types";
  * - `title`  (Short text, required) → tile label
  * - `category` (Short text)         → corner tag, defaults to "MISC"
  * - `image`  (Media)                → artwork, resolved via `includes.Asset`
- * - `colSpan` / `rowSpan` (Integer) → masonry spans, clamped to 1–2
+ *                                     (its pixel size sets the tile's ratio)
+ * - `priority` (Integer)            → higher values are listed first
  * - `order`  (Integer)              → sort position (unordered entries last)
  */
 export interface ContentfulGalleryResponse {
@@ -19,8 +20,7 @@ interface ContentfulEntry {
   fields: {
     title?: unknown;
     category?: unknown;
-    colSpan?: unknown;
-    rowSpan?: unknown;
+    priority?: unknown;
     order?: unknown;
     image?: { sys?: { id?: string; type?: string; linkType?: string } };
   };
@@ -28,17 +28,33 @@ interface ContentfulEntry {
 
 interface ContentfulAsset {
   sys: { id: string };
-  fields?: { file?: { url?: unknown } };
+  fields?: {
+    file?: {
+      url?: unknown;
+      details?: { image?: { width?: unknown; height?: unknown } };
+    };
+  };
 }
 
-const MIN_SPAN = 1;
-const MAX_SPAN = 2;
+interface ResolvedAsset {
+  url: string;
+  aspect: number;
+}
+
+/** Tile ratio when Contentful reports no usable image dimensions. */
+const DEFAULT_ASPECT = 1;
 const DEFAULT_CATEGORY = "MISC";
 const PLACEHOLDER_TEXT = "Awaiting evidence upload";
 
-function clampSpan(value: unknown): 1 | 2 {
-  if (typeof value !== "number" || !Number.isFinite(value)) return MIN_SPAN;
-  return Math.min(MAX_SPAN, Math.max(MIN_SPAN, Math.round(value))) as 1 | 2;
+function isPositiveNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function assetAspect(asset: ContentfulAsset): number {
+  const size = asset.fields?.file?.details?.image;
+  return isPositiveNumber(size?.width) && isPositiveNumber(size?.height)
+    ? size.width / size.height
+    : DEFAULT_ASPECT;
 }
 
 /** Contentful asset URLs are protocol-relative (`//images.ctfassets.net/…`). */
@@ -47,12 +63,12 @@ function normalizeAssetUrl(url: unknown): string | undefined {
   return url.startsWith("//") ? `https:${url}` : url;
 }
 
-function buildAssetUrlMap(
+function buildAssetMap(
   assets: readonly ContentfulAsset[] | undefined,
-): ReadonlyMap<string, string> {
-  const entries = (assets ?? []).flatMap((asset): [string, string][] => {
+): ReadonlyMap<string, ResolvedAsset> {
+  const entries = (assets ?? []).flatMap((asset): [string, ResolvedAsset][] => {
     const url = normalizeAssetUrl(asset.fields?.file?.url);
-    return url ? [[asset.sys.id, url]] : [];
+    return url ? [[asset.sys.id, { url, aspect: assetAspect(asset) }]] : [];
   });
   return new Map(entries);
 }
@@ -73,27 +89,30 @@ function sortByOrder(items: readonly ContentfulEntry[]): ContentfulEntry[] {
 export function mapContentfulGallery(
   response: ContentfulGalleryResponse,
 ): GalleryItem[] {
-  const assetUrls = buildAssetUrlMap(response.includes?.Asset);
+  const assets = buildAssetMap(response.includes?.Asset);
 
   return sortByOrder(response.items)
     .filter(
       (entry) =>
         typeof entry.fields.title === "string" && entry.fields.title.length > 0,
     )
-    .map((entry, index) => {
+    .map((entry) => {
       const { fields } = entry;
       const assetId = fields.image?.sys?.id;
+      const asset = assetId ? assets.get(assetId) : undefined;
       return {
         id: entry.sys.id,
-        num: `E-${String(index + 1).padStart(2, "0")}`,
         label: String(fields.title).toUpperCase(),
         category:
           typeof fields.category === "string" && fields.category.length > 0
             ? fields.category.toUpperCase()
             : DEFAULT_CATEGORY,
-        colSpan: clampSpan(fields.colSpan),
-        rowSpan: clampSpan(fields.rowSpan),
-        image: assetId ? assetUrls.get(assetId) : undefined,
+        aspect: asset?.aspect ?? DEFAULT_ASPECT,
+        ...(typeof fields.priority === "number" &&
+        Number.isFinite(fields.priority)
+          ? { priority: fields.priority }
+          : {}),
+        image: asset?.url,
         imagePlaceholder: PLACEHOLDER_TEXT,
       };
     });

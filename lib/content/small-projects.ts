@@ -37,4 +37,22 @@ export const SMALL_PROJECTS: readonly SmallProject[] = [
     tags: ["PYTHON", "TELEGRAM BOT", "GROK PARSER", "EXCEL MCP"],
     href: "https://github.com/ally-lh/smuHBLogsBot",
   },
+  {
+    title: "NAME TENT VIEWER ",
+    blurb:
+      "A quick project for club marketing for easy management and logistics: preview and customise my A4 name tent designs in 3D (pick a design, set the name and character), then export a print-ready PDF with bleed. The concept, artwork and features are mine; the code was built with Claude Code.",
+    year: "2026",
+    tags: ["CLAUDE CODE", "THREE.JS", "JSPDF", "JAVASCRIPT"],
+    href: "https://ally-lh.github.io/nametent-viewer/table-tent.html",
+    thumbnail: "/thumbs/name-tent-viewer.webp",
+  },
+  {
+    title: "SNAP STUDIO PHOTOBOOTH",
+    blurb:
+      "A retro battle-style photobooth to help a friend draw a crowd and sell more at his road show: pick a Pokémon frame and a filter, snap, then save or share the polaroid. Installs as an offline-first PWA for the booth. Built with Claude.",
+    year: "2026",
+    tags: ["CLAUDE", "PWA", "JAVASCRIPT", "CAMERA API"],
+    href: "https://ally-lh.github.io/snap-studio/",
+    thumbnail: "/thumbs/snap-studio.webp",
+  },
 ];

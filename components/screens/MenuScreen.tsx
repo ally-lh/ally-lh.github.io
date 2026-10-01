@@ -1,29 +1,66 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- small fixed-size thumbnails */
+
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CASES } from "@/lib/content/cases";
+import { OLD_PROJECTS } from "@/lib/content/old-projects";
 import { SMALL_PROJECTS } from "@/lib/content/small-projects";
+import { caseThumbnail } from "@/lib/media";
 import type { SmallProject } from "@/lib/types";
 import type { GameApi } from "@/hooks/useGame";
 import { GameButton } from "@/components/ui/GameButton";
+import { Lightbox } from "@/components/ui/Lightbox";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Tag } from "@/components/ui/Tag";
 
-function SmallProjectRow({ project }: { project: SmallProject }) {
-  const inner = (
+function SmallProjectRow({
+  project,
+  onOpen,
+}: {
+  project: SmallProject;
+  /** Opens the project's `image` full-size (rows without a link). */
+  onOpen?: (src: string) => void;
+}) {
+  const { image } = project;
+  const opensImage = !project.href && !!image && !!onOpen;
+  const heading = (
     <>
       <div className="flex items-baseline justify-between gap-4">
         <div className="min-w-0 font-[family-name:var(--font-display)] text-[18px] tracking-[1px] text-ink">
           {project.title}
           {project.href && <span className="ml-2 text-accent">&#8599;</span>}
+          {opensImage && <span className="ml-2 text-accent">&#9656;</span>}
         </div>
-        <span className="shrink-0 font-mono text-xs tracking-[2px] text-muted">
-          {project.year}
-        </span>
+        {project.year && (
+          <span className="shrink-0 font-mono text-xs tracking-[2px] text-muted">
+            {project.year}
+          </span>
+        )}
       </div>
       <div className="mt-1 text-[13px] leading-normal text-ink-body">
         {project.blurb}
       </div>
+    </>
+  );
+  // Thumbnail sits beside the title + blurb only; the tags get their own
+  // full-width row underneath so nothing is left hanging under the image.
+  const inner = (
+    <>
+      {project.thumbnail ? (
+        <div className="flex items-start gap-4">
+          <img
+            src={project.thumbnail}
+            alt=""
+            draggable={false}
+            className="h-[72px] w-24 shrink-0 border border-line-2 object-cover"
+          />
+          <div className="min-w-0 flex-1">{heading}</div>
+        </div>
+      ) : (
+        heading
+      )}
       <div className="mt-3 flex flex-wrap gap-1.5">
         {project.tags.map((t) => (
           <Tag key={t}>{t}</Tag>
@@ -41,11 +78,24 @@ function SmallProjectRow({ project }: { project: SmallProject }) {
       </a>
     );
   }
+  if (opensImage) {
+    return (
+      <button
+        type="button"
+        onClick={() => onOpen(image)}
+        title="View full size"
+        className={`${cls} w-full cursor-pointer text-left`}
+      >
+        {inner}
+      </button>
+    );
+  }
   return <div className={cls}>{inner}</div>;
 }
 
 /** Case-select grid + side-quest list — the laptop's home screen. */
 export function MenuScreen({ game }: { game: GameApi }) {
+  const [lightbox, setLightbox] = useState<string | null>(null);
   return (
     <div className="absolute inset-0 flex flex-col px-8 pb-[26px] pt-6">
       <div className="flex items-end justify-between gap-6 border-b-[3px] border-accent pb-[18px]">
@@ -103,8 +153,8 @@ export function MenuScreen({ game }: { game: GameApi }) {
                   initial={false}
                   animate={{ rotateY: restRotY, z: restZ }}
                 >
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-[family-name:var(--font-display)] text-[44px] text-line-2">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-[family-name:var(--font-display)] text-[44px] leading-none text-line-2">
                       {c.num}
                     </span>
                     <span className="font-mono text-xs tracking-[3px] text-muted">
@@ -122,6 +172,7 @@ export function MenuScreen({ game }: { game: GameApi }) {
                 </motion.div>
               );
             }
+            const thumb = caseThumbnail(c);
             return (
               <motion.button
                 key={c.id}
@@ -133,14 +184,24 @@ export function MenuScreen({ game }: { game: GameApi }) {
                 whileHover={{ rotateY: 0, z: 46 }}
                 transition={{ duration: 0.18 }}
               >
-                <div className="flex items-baseline justify-between">
-                  <span className="font-[family-name:var(--font-display)] text-[44px] text-accent">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-[family-name:var(--font-display)] text-[44px] leading-none text-accent">
                     {c.num}
                   </span>
                   <span className="font-mono text-xs tracking-[3px] text-muted">
                     {c.year}
                   </span>
                 </div>
+                {/* Pinned to the corner so it never pushes the title down
+                    on short screens. */}
+                {thumb && (
+                  <img
+                    src={thumb}
+                    alt=""
+                    draggable={false}
+                    className="absolute right-6 top-6 aspect-[16/10] w-[30%] border border-line-2 object-cover object-top opacity-80 transition-opacity duration-150 group-hover:opacity-100"
+                  />
+                )}
                 <div>
                   <div className="font-[family-name:var(--font-display)] text-[26px] leading-[1.05] tracking-[1px]">
                     {c.title}
@@ -163,7 +224,18 @@ export function MenuScreen({ game }: { game: GameApi }) {
             ))}
           </div>
         </div>
+        <div className="mt-[26px] pb-2">
+          <SectionLabel className="mb-3.5">
+            COLD CASES // OLD PROJECTS
+          </SectionLabel>
+          <div className="grid grid-cols-2 gap-3.5">
+            {OLD_PROJECTS.map((p) => (
+              <SmallProjectRow key={p.title} project={p} onOpen={setLightbox} />
+            ))}
+          </div>
+        </div>
       </div>
+      <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 }
