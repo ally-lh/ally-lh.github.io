@@ -106,6 +106,18 @@ body {
     transform: translateY(-14px) rotate(45deg);
   }
 }
+/* "Scroll for more" arrow: bobs down and dims on the way back up. */
+@keyframes hint-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
 @keyframes beam-slide {
   to {
     background-position: 1240px 0;

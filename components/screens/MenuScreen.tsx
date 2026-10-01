@@ -2,14 +2,15 @@
 
 /* eslint-disable @next/next/no-img-element -- small fixed-size thumbnails */
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { CASES } from "@/lib/content/cases";
 import { OLD_PROJECTS } from "@/lib/content/old-projects";
 import { SMALL_PROJECTS } from "@/lib/content/small-projects";
 import { caseThumbnail } from "@/lib/media";
 import type { SmallProject } from "@/lib/types";
 import type { GameApi } from "@/hooks/useGame";
+import { useScrollHint } from "@/hooks/useScrollHint";
 import { GameButton } from "@/components/ui/GameButton";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -96,6 +97,8 @@ function SmallProjectRow({
 /** Case-select grid + side-quest list — the laptop's home screen. */
 export function MenuScreen({ game }: { game: GameApi }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const showScrollHint = useScrollHint(scrollerRef);
   return (
     <div className="absolute inset-0 flex flex-col px-8 pb-[26px] pt-6">
       <div className="flex items-end justify-between gap-6 border-b-[3px] border-accent pb-[18px]">
@@ -133,7 +136,10 @@ export function MenuScreen({ game }: { game: GameApi }) {
       </div>
       {/* Scrolls: the case grid fills the first viewport-worth, with the
           side-quests section peeking below as a scroll hint. */}
-      <div className="mt-[26px] min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1">
+      <div
+        ref={scrollerRef}
+        className="mt-[26px] min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1"
+      >
         <div
           className="grid grid-cols-3 grid-rows-2 gap-[26px]"
           style={{
@@ -235,6 +241,29 @@ export function MenuScreen({ game }: { game: GameApi }) {
           </div>
         </div>
       </div>
+      {/* "Scroll for more" nudge: shows after idling at the top, gone on scroll. */}
+      <AnimatePresence>
+        {showScrollHint && (
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 bg-bg/85 px-3 py-1 text-accent"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className="font-mono text-[10px] tracking-[4px]">
+              SCROLL FOR MORE
+            </span>
+            <span
+              className="text-[18px] leading-none"
+              style={{ animation: "hint-bob 1.2s ease-in-out infinite" }}
+            >
+              &#9662;
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
