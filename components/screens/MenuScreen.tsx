@@ -16,6 +16,8 @@ import { Lightbox } from "@/components/ui/Lightbox";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Tag } from "@/components/ui/Tag";
 
+const CASE_GRID_MAX_HEIGHT = 520;
+
 function SmallProjectRow({
   project,
   onOpen,
@@ -145,6 +147,10 @@ export function MenuScreen({ game }: { game: GameApi }) {
           style={{
             height: "calc(100% - 44px)",
             minHeight: 380,
+            // Tall portrait screens (tablets) would otherwise stretch the
+            // cards into empty columns; 520 is roughly the tallest a
+            // desktop ever renders, so landscape layouts are unaffected.
+            maxHeight: CASE_GRID_MAX_HEIGHT,
             transformStyle: "preserve-3d",
           }}
         >

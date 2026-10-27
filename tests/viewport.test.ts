@@ -15,10 +15,23 @@ describe("resolveViewport", () => {
     });
   });
 
-  it("asks portrait phones and tablets to rotate", () => {
+  it("asks portrait phones to rotate", () => {
     expect(resolveViewport(390, 844).mode).toBe("rotate"); // iPhone portrait
-    expect(resolveViewport(768, 1024).mode).toBe("rotate"); // iPad portrait
-    expect(resolveViewport(810, 1080).mode).toBe("rotate"); // iPad 10.9 portrait
+    expect(resolveViewport(430, 932).mode).toBe("rotate"); // iPhone Pro Max portrait
+  });
+
+  it("plays on portrait tablets without asking to rotate", () => {
+    for (const [w, h] of [
+      [768, 1024], // iPad mini / 9.7 portrait
+      [810, 1080], // iPad 10.2 portrait
+      [820, 1180], // iPad Air portrait
+      [1024, 1366], // iPad Pro 12.9 portrait
+    ] as const) {
+      const info = resolveViewport(w, h);
+      expect(info.mode).toBe("play");
+      expect(info.phone).toBe(false);
+      expect(info.scale).toBeGreaterThanOrEqual(0.5);
+    }
   });
 
   it("plays scaled-down on landscape phones with the phone flag", () => {

@@ -13,6 +13,9 @@ export function TiltLayer({ children }: { children: React.ReactNode }) {
     const rxTo = gsap.quickTo(el, "rotationX", { duration: 0.3, ease: "power2.out" });
     const ryTo = gsap.quickTo(el, "rotationY", { duration: 0.3, ease: "power2.out" });
     const move = (e: PointerEvent) => {
+      // Mouse only: on touch the tilt would chase the finger mid-swipe and
+      // skew the laptop screen's hit area away from where it is drawn.
+      if (e.pointerType !== "mouse") return;
       rxTo(-(e.clientY / window.innerHeight - 0.5) * 5);
       ryTo((e.clientX / window.innerWidth - 0.5) * 7);
     };

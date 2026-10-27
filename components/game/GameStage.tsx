@@ -111,7 +111,10 @@ export function GameStage({
           // 1 on phone-sized landscape viewports, 0 elsewhere — multiplies
           // phone-only layout lifts (e.g. raising the laptop off the dialogue).
           "--phone-lift": viewport.phone ? 1 : 0,
-          touchAction: "none",
+          // Title screen is pure aiming, so swallow every gesture. Once the
+          // laptop is open its screens scroll; iOS intersects touch-action
+          // with ancestors, so "none" here would freeze those scrollers.
+          touchAction: isTitle ? "none" : "pan-x pan-y",
         } as CSSProperties
       }
     >

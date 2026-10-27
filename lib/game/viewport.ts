@@ -8,8 +8,11 @@ export interface ViewportInfo {
   phone: boolean;
 }
 
-/** Below this width a portrait viewport is asked to rotate. */
-export const ROTATE_BELOW_WIDTH = 820;
+/**
+ * Below this width a portrait viewport is asked to rotate. Phones sit well
+ * under it; every portrait tablet (iPad mini is 744 wide) clears it and plays.
+ */
+export const ROTATE_BELOW_WIDTH = 600;
 /** Landscape viewports smaller than this just can't host the range. */
 export const MIN_LANDSCAPE_WIDTH = 568;
 export const MIN_LANDSCAPE_HEIGHT = 250;
