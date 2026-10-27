@@ -4,6 +4,7 @@ import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { useAssetPreload } from "@/hooks/useAssetPreload";
 import { useGame } from "@/hooks/useGame";
 import { useSfx } from "@/hooks/useSfx";
+import { useTouchScrollFallback } from "@/hooks/useTouchScrollFallback";
 import { useViewport } from "@/hooks/useViewport";
 import { isLaptopScreen } from "@/lib/game/machine";
 import { ACCENT, ASSETS, PIP_FRAMES } from "@/lib/theme";
@@ -75,10 +76,12 @@ export function GameStage({
   const viewport = useViewport();
   const game = useGame(revealed);
   const { pew } = useSfx();
+  const stageRef = useRef<HTMLDivElement>(null);
   const fxRef = useRef<HTMLDivElement>(null);
   const shakeRef = useRef<HTMLDivElement>(null);
   const gunRef = useRef<GunHandle>(null);
   const { fire } = useShotEffects(fxRef, shakeRef);
+  useTouchScrollFallback(stageRef);
 
   const { screen } = game.state;
   const isTitle = screen === "title";
@@ -102,6 +105,7 @@ export function GameStage({
 
   return (
     <div
+      ref={stageRef}
       onPointerDown={handleShot}
       className="fixed inset-0 select-none overflow-hidden bg-bg text-ink"
       style={

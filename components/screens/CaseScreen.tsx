@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CASES } from "@/lib/content/cases";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import type { GameApi } from "@/hooks/useGame";
 import { GameButton } from "@/components/ui/GameButton";
 import { ImageSlot } from "@/components/ui/ImageSlot";
@@ -13,6 +14,7 @@ import { Tag } from "@/components/ui/Tag";
 /** Single case file: evidence image, verdict copy, tags and repo link. */
 export function CaseScreen({ game }: { game: GameApi }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const flatBoard = useCoarsePointer();
   const c = CASES[game.state.caseIdx];
   if (!c) return null;
   // Single-media cases: the video (if any) is what's on show, else the image.
@@ -48,7 +50,9 @@ export function CaseScreen({ game }: { game: GameApi }) {
               ...(c.video && !c.bento
                 ? { aspectRatio: "16 / 9" }
                 : { height: "100%" }),
-              transform: "rotateY(7deg) translateZ(20px)",
+              // Flat on touch: iOS won't scroll the bento board or hit-test
+              // its tiles properly inside a 3D-transformed frame.
+              transform: flatBoard ? "none" : "rotateY(7deg) translateZ(20px)",
               boxShadow: "-18px 24px 40px rgba(0,0,0,0.5)",
             }}
           >

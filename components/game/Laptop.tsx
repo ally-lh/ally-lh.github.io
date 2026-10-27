@@ -1,10 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import { SITE } from "@/lib/content/site";
 import { ScreenWipe } from "./ScreenWipe";
 
 const EASE = "cubic-bezier(.6,0,.25,1)";
-const GROW = `.9s ${EASE}`;
+const GROW_MS = 900;
+const GROW = `${GROW_MS}ms ${EASE}`;
+
+/**
+ * True once the lid has fully opened and grown on a touch device. The lid's
+ * 3D context (preserve-3d + hidden backfaces) is only needed to animate it;
+ * left in place, iOS Safari mis-hit-tests taps and won't scroll the screens.
+ */
+function useFlatLid(open: boolean, grown: boolean): boolean {
+  const coarse = useCoarsePointer();
+  const settled = coarse && open && grown;
+  const [flat, setFlat] = useState(false);
+
+  useEffect(() => {
+    if (!settled) return;
+    const timer = setTimeout(() => setFlat(true), GROW_MS);
+    return () => {
+      clearTimeout(timer);
+      setFlat(false);
+    };
+  }, [settled]);
+
+  return settled && flat;
+}
 
 interface LaptopProps {
   /** Lid open (any screen except title). */
@@ -66,6 +91,7 @@ function LaptopBase({ grown }: { grown: boolean }) {
  * hosts the portfolio screens.
  */
 export function Laptop({ open, grown, wiping, onShoot, children }: LaptopProps) {
+  const flat = useFlatLid(open, grown);
   return (
     <div className="pointer-events-none absolute inset-0 flex items-end justify-center">
       <div
@@ -125,16 +151,16 @@ export function Laptop({ open, grown, wiping, onShoot, children }: LaptopProps) 
               height: grown
                 ? "max(min(760px, calc(82vh - 60px)), calc(var(--phone-lift, 0) * (100vh - 130px)))"
                 : "calc(230px * var(--ui-scale, 1))",
-              transform: `rotateX(${open ? 0 : -104}deg)`,
+              transform: flat ? "none" : `rotateX(${open ? 0 : -104}deg)`,
               transformOrigin: "50% 100%",
-              transformStyle: "preserve-3d",
+              transformStyle: flat ? "flat" : "preserve-3d",
               transition: `width ${GROW}, height ${GROW}, transform ${GROW}`,
             }}
           >
             {/* screen face */}
             <div
               className="absolute inset-0 overflow-hidden border-[12px] border-panel-2 bg-bg outline outline-4 outline-black"
-              style={{ backfaceVisibility: "hidden" }}
+              style={{ backfaceVisibility: flat ? "visible" : "hidden" }}
             >
               {/* Scale the screen UI down on small viewports; the outer
                   laptop geometry stays viewport-driven. */}
@@ -157,6 +183,7 @@ export function Laptop({ open, grown, wiping, onShoot, children }: LaptopProps) 
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateX(180deg)",
+                visibility: flat ? "hidden" : "visible",
               }}
             >
               <div

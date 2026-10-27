@@ -10,6 +10,7 @@ import { SMALL_PROJECTS } from "@/lib/content/small-projects";
 import { caseThumbnail } from "@/lib/media";
 import type { SmallProject } from "@/lib/types";
 import type { GameApi } from "@/hooks/useGame";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import { useScrollHint } from "@/hooks/useScrollHint";
 import { GameButton } from "@/components/ui/GameButton";
 import { Lightbox } from "@/components/ui/Lightbox";
@@ -101,6 +102,9 @@ export function MenuScreen({ game }: { game: GameApi }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const showScrollHint = useScrollHint(scrollerRef);
+  // Touch screens get flat cards: there's no hover to show off the tilt, and
+  // iOS hit-tests the rotated cards so badly that only part of each one taps.
+  const flatCards = useCoarsePointer();
   return (
     <div className="absolute inset-0 flex flex-col px-8 pb-[26px] pt-6">
       <div className="flex items-end justify-between gap-6 border-b-[3px] border-accent pb-[18px]">
@@ -151,12 +155,12 @@ export function MenuScreen({ game }: { game: GameApi }) {
             // cards into empty columns; 520 is roughly the tallest a
             // desktop ever renders, so landscape layouts are unaffected.
             maxHeight: CASE_GRID_MAX_HEIGHT,
-            transformStyle: "preserve-3d",
+            transformStyle: flatCards ? "flat" : "preserve-3d",
           }}
         >
           {CASES.map((c, i) => {
-            const restRotY = (1 - (i % 3)) * 9;
-            const restZ = i % 3 === 1 ? 26 : 0;
+            const restRotY = flatCards ? 0 : (1 - (i % 3)) * 9;
+            const restZ = !flatCards && i % 3 === 1 ? 26 : 0;
             if (c.comingSoon) {
               return (
                 <motion.div
@@ -193,7 +197,7 @@ export function MenuScreen({ game }: { game: GameApi }) {
                 className="corner-cut group relative flex flex-col justify-between gap-3 border border-line bg-panel p-6 text-left text-ink hover:border-accent hover:bg-[#1c1620]"
                 initial={false}
                 animate={{ rotateY: restRotY, z: restZ }}
-                whileHover={{ rotateY: 0, z: 46 }}
+                whileHover={flatCards ? undefined : { rotateY: 0, z: 46 }}
                 transition={{ duration: 0.18 }}
               >
                 <div className="flex items-baseline gap-3">
