@@ -7,6 +7,7 @@ import { useSfx } from "@/hooks/useSfx";
 import { useTouchScrollFallback } from "@/hooks/useTouchScrollFallback";
 import { useViewport } from "@/hooks/useViewport";
 import { isLaptopScreen } from "@/lib/game/machine";
+import { isTap, type Point } from "@/lib/game/tap";
 import { ACCENT, ASSETS, PIP_FRAMES } from "@/lib/theme";
 import type { GalleryItem, ScreenId } from "@/lib/types";
 import { Backdrop } from "./Backdrop";
@@ -60,7 +61,8 @@ function LaptopScreenContent({
 
 /**
  * Root client component: composes the range, laptop, gun, crosshair and
- * dialogue, and routes every pointer-down through the "shot" pipeline.
+ * dialogue, and routes every pointer-down (or touch tap) through the "shot"
+ * pipeline.
  */
 const PRELOAD_SOURCES = [...Object.values(ASSETS), ...PIP_FRAMES];
 
@@ -86,27 +88,53 @@ export function GameStage({
   const { screen } = game.state;
   const isTitle = screen === "title";
 
-  const handleShot = (e: PointerEvent<HTMLDivElement>) => {
+  // Inside the laptop, touches only fire once they lift as a tap, so swiping
+  // to scroll doesn't shoot (or power the laptop down). The title range has
+  // nothing to scroll and its targets react on touch-down, so it fires at once.
+  const pendingTouch = useRef<{ id: number; at: Point; target: Element | null } | null>(
+    null,
+  );
+
+  const shoot = (to: Point, target: Element | null) => {
     if (!revealed) return;
     pew();
     if (isTitle) gunRef.current?.recoil();
     const from = gunRef.current?.muzzlePoint() ?? { x: 0, y: 0 };
-    fire({
-      from,
-      to: { x: e.clientX, y: e.clientY },
-      tracer: isTitle,
-    });
+    fire({ from, to, tracer: isTitle });
     // A shot that misses every interactive surface powers the laptop down.
-    const target = e.target as Element | null;
     if (isLaptopScreen(screen) && !target?.closest("[data-shield], [data-target]")) {
       game.powerDown();
     }
   };
 
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    const at = { x: e.clientX, y: e.clientY };
+    const target = e.target as Element | null;
+    if (e.pointerType === "touch" && !isTitle) {
+      pendingTouch.current = { id: e.pointerId, at, target };
+      return;
+    }
+    shoot(at, target);
+  };
+
+  const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const touch = pendingTouch.current;
+    if (!touch || touch.id !== e.pointerId) return;
+    pendingTouch.current = null;
+    const at = { x: e.clientX, y: e.clientY };
+    if (isTap(touch.at, at)) shoot(at, touch.target);
+  };
+
+  const clearPendingTouch = () => {
+    pendingTouch.current = null;
+  };
+
   return (
     <div
       ref={stageRef}
-      onPointerDown={handleShot}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={clearPendingTouch}
       className="fixed inset-0 select-none overflow-hidden bg-bg text-ink"
       style={
         {
