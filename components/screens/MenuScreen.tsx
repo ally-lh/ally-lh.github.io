@@ -5,6 +5,7 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CASES } from "@/lib/content/cases";
+import { JOINT_VENTURES } from "@/lib/content/joint-ventures";
 import { OLD_PROJECTS } from "@/lib/content/old-projects";
 import { SMALL_PROJECTS } from "@/lib/content/small-projects";
 import { caseThumbnail } from "@/lib/media";
@@ -43,6 +44,16 @@ function SmallProjectRow({
           </span>
         )}
       </div>
+      {project.partner && (
+        <div className="mt-1 font-mono text-[11px] tracking-[2px] text-accent">
+          JOINT VENTURE &times; {project.partner}
+        </div>
+      )}
+      {project.author && (
+        <div className="mt-1 font-mono text-[11px] tracking-[2px] text-accent">
+          SOLO WORK BY {project.author}
+        </div>
+      )}
       <div className="mt-1 text-[13px] leading-normal text-ink-body">
         {project.blurb}
       </div>
@@ -236,6 +247,16 @@ export function MenuScreen({ game }: { game: GameApi }) {
           </SectionLabel>
           <div className="grid grid-cols-2 gap-3.5">
             {SMALL_PROJECTS.map((p) => (
+              <SmallProjectRow key={p.title} project={p} />
+            ))}
+          </div>
+        </div>
+        <div className="mt-[26px] pb-2">
+          <SectionLabel className="mb-3.5">
+            CO-OP MODE // JOINT VENTURES
+          </SectionLabel>
+          <div className="grid grid-cols-2 gap-3.5">
+            {JOINT_VENTURES.map((p) => (
               <SmallProjectRow key={p.title} project={p} />
             ))}
           </div>

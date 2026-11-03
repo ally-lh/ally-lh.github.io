@@ -117,4 +117,8 @@ export interface SmallProject {
   image?: string;
   /** Optional small image shown beside the blurb (path under /public). */
   thumbnail?: string;
+  /** Collaborator on a joint venture — shown as a badge on the row. */
+  partner?: string;
+  /** Someone else's solo work shown here — shown as a "by" badge. */
+  author?: string;
 }

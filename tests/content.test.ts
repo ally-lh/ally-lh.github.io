@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { CASES } from "@/lib/content/cases";
 import { SCREEN_LINES } from "@/lib/content/dialogue";
 import { GALLERY } from "@/lib/content/gallery";
+import { JOINT_VENTURES } from "@/lib/content/joint-ventures";
 import { OLD_PROJECTS } from "@/lib/content/old-projects";
 import { SKILLS } from "@/lib/content/profile";
 import { SITE } from "@/lib/content/site";
@@ -24,7 +25,7 @@ function localMediaPaths(): string[] {
       ...(c.bento ?? []).flatMap((tile) => [tile.src, tile.video]),
     ]),
     ...GALLERY.flatMap((g) => [g.image, g.video]),
-    ...[...SMALL_PROJECTS, ...OLD_PROJECTS].flatMap((p) => [
+    ...[...SMALL_PROJECTS, ...OLD_PROJECTS, ...JOINT_VENTURES].flatMap((p) => [
       p.thumbnail,
       p.image,
     ]),
@@ -120,10 +121,18 @@ describe("content integrity", () => {
     }
   });
 
+  it("joint ventures credit a partner and link out", () => {
+    expect(JOINT_VENTURES.length).toBeGreaterThan(0);
+    for (const p of JOINT_VENTURES) {
+      expect((p.partner ?? p.author)?.trim(), p.title).toBeTruthy();
+      expect(p.href, p.title).toMatch(/^https?:\/\//);
+    }
+  });
+
   it("small and old projects have the fields the menu renders", () => {
-    const titles = [...SMALL_PROJECTS, ...OLD_PROJECTS].map((p) => p.title);
+    const titles = [...SMALL_PROJECTS, ...OLD_PROJECTS, ...JOINT_VENTURES].map((p) => p.title);
     expect(new Set(titles).size).toBe(titles.length);
-    for (const p of [...SMALL_PROJECTS, ...OLD_PROJECTS]) {
+    for (const p of [...SMALL_PROJECTS, ...OLD_PROJECTS, ...JOINT_VENTURES]) {
       expect(p.title.length).toBeGreaterThan(0);
       expect(p.blurb.length).toBeGreaterThan(0);
       expect(p.tags.length).toBeGreaterThan(0);
