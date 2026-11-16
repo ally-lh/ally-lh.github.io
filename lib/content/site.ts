@@ -4,6 +4,8 @@ export const SITE = {
   tagline:
     "Welcome to my range! This is a portfolio of my work. Take your shot!",
   osName: "ALLISON_OS",
+  /** Canonical public URL; used for SEO metadata, sitemap and share images. */
+  url: "https://ally-lh.github.io",
   email: "allisonloosg@gmail.com",
   /** Path under /public. */
   resumePdf: "/allisonloo_resume.pdf",
